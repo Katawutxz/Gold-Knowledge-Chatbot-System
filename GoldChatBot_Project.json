@@ -1,0 +1,332 @@
+{
+  "name": "GoldChatBot_Project",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "gold-bot",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -688,
+        32
+      ],
+      "id": "bc1ab3b9-4e8b-40e9-adab-97b26b18e4c6",
+      "name": "Webhook",
+      "webhookId": "ff0bdd0d-508d-4d93-a5a4-9b5664d81244"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook').item.json.body.events[0].message.type }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=คุณคือผู้เชี่ยวชาญด้านการลงทุนทองคำ ตอบเป็นภาษาไทย กระชับ เข้าใจง่าย ห้ามแนะนำการลงทุนที่มีความเสี่ยงสูงโดยไม่แจ้งเตือน\n\nราคาทองคำปัจจุบัน (ข้อมูล real-time):\n🇹🇭 ทองไทย:\n- ทองรูปพรรณ รับซื้อ: {{ $('Get Thai Gold').item.json.response.price.gold.buy }} บาท\n- ทองรูปพรรณ ขาย: {{ $('Get Thai Gold').item.json.response.price.gold.sell }} บาท\n- ทองแท่ง รับซื้อ: {{ $('Get Thai Gold').item.json.response.price.gold_bar.buy }} บาท\n- ทองแท่ง ขาย: {{ $('Get Thai Gold').item.json.response.price.gold_bar.sell }} บาท\n\n🌍 ทองโลก:\n- ราคา: ${{ $('Get World Gold').item.json.price }} USD/ออนซ์\n- เปลี่ยนแปลง: {{ $('Get World Gold').item.json.chp }}%\n\nคำถามของผู้ใช้: {{ $('Webhook').item.json.body.events[0].message.text }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        208,
+        32
+      ],
+      "id": "60c625c6-f85d-4e49-8c19-af61bc9205e1",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "mdt/gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "mdt/gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        256
+      ],
+      "id": "a2ea967c-70ac-4152-8a8c-b8bda0956f43",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "3g46xLZanbiYyzf3",
+          "name": "OpenAi account 11"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.chnwt.dev/thai-gold-api/latest",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -240,
+        -64
+      ],
+      "id": "b4953cdf-48ce-492c-898d-62b0bf69ae2e",
+      "name": "Get Thai Gold"
+    },
+    {
+      "parameters": {
+        "url": "https://www.goldapi.io/api/XAU/USD",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-access-token",
+              "value": "goldapi-1feasmns3bfmt-io"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -240,
+        128
+      ],
+      "id": "e6289379-cc78-470f-88c3-82b4c26e0228",
+      "name": "Get World Gold"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -16,
+        32
+      ],
+      "id": "8de73ea6-2ea0-4a31-9de9-54b44bc512d1",
+      "name": "Merge Gold Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer 6jxNOKfB8h12sdbrvW0dDsoua88xbNL2uV/7tBV8MtWm2tWKr9AIkv7K773TOKED15EVkOV+izToqFDkxdQLsJOACri23nBFDd3w7O/tQVa0fsgwbuEiHNnfi4wvzqKSfDj5b5ZqQCm2RKrA4b+3eAdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($input.first().json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        784,
+        32
+      ],
+      "id": "6c4dc09d-dc61-46b1-a264-6072b9b820a8",
+      "name": "Reply LINE"
+    },
+    {
+      "parameters": {
+        "jsCode": "const replyToken = $('Webhook').first().json.body.events[0].replyToken;\nconst thaiGold = $('Get Thai Gold').first().json.response.price;\nconst worldGold = $('Get World Gold').first().json;\nconst aiText = $input.first().json.text.replace(/\\n/g, ' ').substring(0, 500);\n\nconst body = {\n  replyToken: replyToken,\n  messages: [{\n    type: \"flex\",\n    altText: \"ราคาทองคำวันนี้\",\n    contents: {\n      type: \"bubble\",\n      styles: { header: { backgroundColor: \"#FFD700\" } },\n      header: {\n        type: \"box\", layout: \"vertical\",\n        contents: [{ type: \"text\", text: \"Gold Dashboard\", weight: \"bold\", size: \"xl\", color: \"#333333\" }]\n      },\n      body: {\n        type: \"box\", layout: \"vertical\", spacing: \"sm\",\n        contents: [\n          { type: \"text\", text: \"ทองไทย\", weight: \"bold\", size: \"md\" },\n          { type: \"box\", layout: \"horizontal\", contents: [\n            { type: \"text\", text: \"รูปพรรณ รับซื้อ\", size: \"sm\", color: \"#888888\", flex: 2 },\n            { type: \"text\", text: thaiGold.gold.buy + \" ฿\", size: \"sm\", color: \"#E65100\", weight: \"bold\", flex: 2, align: \"end\" }\n          ]},\n          { type: \"box\", layout: \"horizontal\", contents: [\n            { type: \"text\", text: \"รูปพรรณ ขาย\", size: \"sm\", color: \"#888888\", flex: 2 },\n            { type: \"text\", text: thaiGold.gold.sell + \" ฿\", size: \"sm\", color: \"#E65100\", weight: \"bold\", flex: 2, align: \"end\" }\n          ]},\n          { type: \"box\", layout: \"horizontal\", contents: [\n            { type: \"text\", text: \"แท่ง รับซื้อ\", size: \"sm\", color: \"#888888\", flex: 2 },\n            { type: \"text\", text: thaiGold.gold_bar.buy + \" ฿\", size: \"sm\", color: \"#E65100\", weight: \"bold\", flex: 2, align: \"end\" }\n          ]},\n          { type: \"box\", layout: \"horizontal\", contents: [\n            { type: \"text\", text: \"แท่ง ขาย\", size: \"sm\", color: \"#888888\", flex: 2 },\n            { type: \"text\", text: thaiGold.gold_bar.sell + \" ฿\", size: \"sm\", color: \"#E65100\", weight: \"bold\", flex: 2, align: \"end\" }\n          ]},\n          { type: \"separator\" },\n          { type: \"text\", text: \"ทองโลก\", weight: \"bold\", size: \"md\" },\n          { type: \"box\", layout: \"horizontal\", contents: [\n            { type: \"text\", text: \"ราคา/ออนซ์\", size: \"sm\", color: \"#888888\", flex: 2 },\n            { type: \"text\", text: \"$\" + worldGold.price + \"/oz\", size: \"sm\", color: \"#1565C0\", weight: \"bold\", flex: 2, align: \"end\" }\n          ]},\n          { type: \"box\", layout: \"horizontal\", contents: [\n            { type: \"text\", text: \"เปลี่ยนแปลง\", size: \"sm\", color: \"#888888\", flex: 2 },\n            { type: \"text\", text: worldGold.chp + \"%\", size: \"sm\", color: worldGold.chp >= 0 ? \"#2E7D32\" : \"#C62828\", weight: \"bold\", flex: 2, align: \"end\" }\n          ]},\n          { type: \"separator\" },\n          { type: \"text\", text: aiText, size: \"sm\", color: \"#555555\", wrap: true }\n        ]\n      },\n      footer: {\n        type: \"box\",\n        layout: \"vertical\",\n        contents: [{\n          type: \"button\",\n          action: {\n            type: \"uri\",\n            label: \"เปิด Gold Dashboard\",\n            uri: \"https://liff.line.me/2009761090-RwDlH5en\"\n          },\n          style: \"primary\",\n          color: \"#FFD700\"\n        }]\n      }\n    }\n  }]\n};\n\nreturn [{ json: body }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        32
+      ],
+      "id": "8fd71252-c41f-49ea-9509-053d40135f32",
+      "name": "Build Flex Message"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "debaafa9-d4fb-44f7-9b0b-848ae52e4a1e",
+              "leftValue": "={{ $json.body.events.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "9c041ad6-e77c-4cc1-ad19-c9b05fa2fe38",
+              "leftValue": "={{ $json.body.events[0].type }}",
+              "rightValue": "message",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "ab2a75c6-b2c6-420c-a8b9-ff487177fc45",
+              "leftValue": "={{ $json.body.events[0].message.type }}",
+              "rightValue": "text",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -464,
+        32
+      ],
+      "id": "506b5e75-aa5f-4756-93b9-035a05a0f5d1",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Build Flex Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Thai Gold": {
+      "main": [
+        [
+          {
+            "node": "Merge Gold Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get World Gold": {
+      "main": [
+        [
+          {
+            "node": "Merge Gold Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Gold Data": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply LINE": {
+      "main": [
+        []
+      ]
+    },
+    "Build Flex Message": {
+      "main": [
+        [
+          {
+            "node": "Reply LINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get World Gold",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Thai Gold",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8e0fb0bf-7e4a-4911-ace3-afc562403349",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c6ea936472e83d981fde2e1f0a8b6d61fe0dc6b54f3a7d1b0fae6f08b4334cee"
+  },
+  "id": "FwfqXPnbAyh7xoF2",
+  "tags": []
+}
